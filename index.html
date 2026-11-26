@@ -927,10 +927,10 @@ function loadOpenCvScript(src, fallbackSrc) {
 }
 
 loadOpenCvScript(
-  "https://docs.opencv.org/4.x/opencv.js",
+  "./opencv.js",
   "https://cdnjs.cloudflare.com/ajax/libs/opencv.js/4.9.0/opencv.js"
 );
-
+  
 function setTargetStatus(found) {
   detectedStatus.textContent = found ? "LOCKED" : "NO";
   detectedStatus.style.color =
