@@ -1,0 +1,2170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Light The Star</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; }
+:root {
+  --base-bg: #190A35;
+  --base-deep: #110626;
+  --base-mid: #24104A;
+  --base-light: #351969;
+  --border-glow: rgba(188, 148, 246, 0.28);
+  --text: #eee8f7;
+  --muted: #c2b5d6;
+}
+
+html, body {
+  min-height: 100%;
+  min-height: 100dvh;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  color: var(--text);
+  font-family: 'Kanit', Arial, sans-serif;
+  background:
+    radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,.45) 99%, transparent),
+    radial-gradient(1px 1px at 76% 23%, rgba(217,186,255,.40) 99%, transparent),
+    radial-gradient(1.5px 1.5px at 42% 72%, rgba(255,255,255,.30) 99%, transparent),
+    radial-gradient(1px 1px at 88% 83%, rgba(203,168,255,.35) 99%, transparent),
+    radial-gradient(ellipse at 78% 10%, #2a1256 0%, transparent 50%),
+    radial-gradient(ellipse at 15% 90%, #120628 0%, transparent 60%),
+    var(--base-bg);
+  background-size: 130px 130px, 170px 170px, 210px 210px, 150px 150px, auto, auto, auto;
+}
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+  height: 64px;
+  min-height: 64px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 12px;
+  text-align: center;
+  background:
+    linear-gradient(rgba(25, 10, 53, 0.12), rgba(25, 10, 53, 0.12)),
+    url("picPanelLightthestar.jpg") center center / cover no-repeat;
+  background-color: var(--base-bg);
+  border-bottom: 1px solid rgba(188, 148, 246, 0.18);
+}
+
+h1 {
+  margin: 0;
+  color: #f4eeff;
+  font-family: Arial, sans-serif;
+  font-size: clamp(23px, 5vw, 28px);
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+
+main {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0;
+  background: var(--base-bg);
+}
+
+.camera-view {
+  position: relative;
+  width: 100%;
+  height: min(66vh, 640px);
+  min-height: 340px;
+  background: #090314;
+  border: 0;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+video { display: none; }
+
+canvas#canvasOutput {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.crosshair {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 1px solid #7e3af2;
+  border-radius: 50%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 2;
+}
+.crosshair::before {
+  content: "";
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: #7e3af2;
+  border-radius: 50%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+.coordinates { display: none; }
+
+#runAnimation {
+  display: none;
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  width: min(222px, 66%);
+  min-height: 49px;
+  padding: 10px 18px;
+  margin: 0;
+  border: 1.5px solid rgba(206, 173, 255, 0.55);
+  border-radius: 18px;
+  background: linear-gradient(115deg, #2d145c 0%, #190A35 60%, #130729 100%);
+  box-shadow: 0 6px 20px rgba(10, 3, 24, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  color: #f6efff;
+  cursor: pointer;
+}
+#runAnimation:disabled { opacity: .5; }
+
+.controls {
+  flex: 1 0 auto;
+  margin: 0;
+  padding: 20px 20px 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-content: start;
+  gap: 12px;
+  background:
+    radial-gradient(1px 1px at 17% 28%, rgba(255,255,255,.18) 99%, transparent 100%),
+    radial-gradient(1px 1px at 73% 72%, rgba(225,204,255,.14) 99%, transparent 100%),
+    linear-gradient(180deg, #190A35 0%, #14072b 100%);
+  background-size: 173px 113px, 211px 137px, auto;
+}
+
+button {
+  width: 100%;
+  min-height: 78px;
+  padding: 12px 10px;
+  border: 1px solid var(--border-glow);
+  border-radius: 20px;
+  background: linear-gradient(125deg, #291254 0%, #190A35 60%, #130729 100%);
+  color: #f3ecff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(235, 215, 255, 0.14), 0 6px 16px rgba(8, 2, 20, 0.35);
+}
+button:disabled {
+  background: #21123d;
+  border-color: rgba(160, 126, 190, .2);
+  color: rgba(239, 229, 250, .55);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+#startCamera, #resetTracking {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 62px;
+  border: 1px solid rgba(196, 158, 248, 0.32);
+  border-radius: 18px;
+  background: linear-gradient(125deg, rgba(46, 22, 92, 0.95) 0%, rgba(25, 10, 53, 0.98) 60%, rgba(19, 7, 41, 0.98) 100%);
+  box-shadow: inset 0 1px 0 rgba(245, 226, 255, 0.18), 0 7px 18px rgba(8, 2, 20, 0.32);
+  backdrop-filter: blur(16px) saturate(135%);
+  -webkit-backdrop-filter: blur(16px) saturate(135%);
+  color: #f6efff;
+  font-size: 13px;
+  letter-spacing: .02em;
+}
+#startCamera:disabled, #resetTracking:disabled {
+  opacity: .78;
+  background: linear-gradient(125deg, rgba(35, 16, 71, 0.9), rgba(22, 9, 46, 0.95));
+  border-color: rgba(160, 126, 190, 0.22);
+  color: rgba(239, 229, 250, 0.65);
+}
+
+#playerBar {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  justify-self: center;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 24px;
+  padding: 3px 12px;
+  border: 1px solid rgba(188, 148, 246, 0.22);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(38, 17, 77, 0.55), rgba(25, 10, 53, 0.45));
+  box-shadow: inset 0 1px 0 rgba(230, 208, 255, 0.08), 0 2px 8px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(15px) saturate(125%);
+  -webkit-backdrop-filter: blur(15px) saturate(125%);
+  cursor: pointer;
+}
+#playerInfo {
+  display: block;
+  color: rgba(246, 238, 255, .94) !important;
+  font-size: 11px !important;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+#nameDialog {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(13, 5, 29, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+#nameDialog.is-open { display: flex; }
+
+.name-dialog-card {
+  position: relative;
+  width: min(100%, 350px);
+  padding: 27px 22px 21px;
+  border: 1px solid rgba(196, 158, 248, 0.34);
+  border-radius: 25px;
+  background: linear-gradient(145deg, rgba(46, 21, 92, 0.95), rgba(25, 10, 53, 0.97) 55%, rgba(17, 6, 38, 0.98));
+  box-shadow: 0 22px 70px rgba(5, 1, 14, 0.58), inset 0 1px 0 rgba(245, 225, 255, 0.22);
+  backdrop-filter: blur(24px) saturate(165%);
+  -webkit-backdrop-filter: blur(24px) saturate(165%);
+  text-align: center;
+}
+.name-dialog-card h2 {
+  margin: 0 26px 19px;
+  color: #fff;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: .08em;
+}
+#playerNameInput {
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 14px;
+  border: 1px solid rgba(196, 161, 225, 0.36);
+  border-radius: 14px;
+  outline: none;
+  background: rgba(15, 5, 34, 0.65);
+  color: #fff;
+  font: inherit;
+  box-shadow: inset 0 1px 5px rgba(0, 0, 0, 0.25);
+}
+#playerNameInput::placeholder { color: rgba(239, 230, 255, 0.55); }
+#playerNameInput:focus {
+  border-color: rgba(205, 170, 255, 0.85);
+  box-shadow: 0 0 0 3px rgba(170, 115, 255, 0.2);
+}
+.name-dialog-actions { display: flex; gap: 10px; margin-top: 16px; }
+.name-dialog-actions button {
+  min-height: 43px;
+  border: 1px solid rgba(190, 151, 222, 0.38);
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  background: linear-gradient(125deg, rgba(54, 26, 107, 0.96), rgba(25, 10, 53, 0.98));
+  box-shadow: inset 0 1px 0 rgba(245, 225, 255, 0.16), 0 6px 16px rgba(0, 0, 0, 0.32);
+}
+#savePlayerName { flex: 1.25; color: #fff; }
+#skipPlayerName { flex: .75; color: rgba(255, 255, 255, 0.85); }
+#closeNameDialog {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 30px;
+  min-height: 30px;
+  padding: 0;
+  border: 1px solid rgba(201, 169, 229, 0.32);
+  border-radius: 50%;
+  background: rgba(34, 15, 71, 0.85);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 20px;
+}
+
+#status {
+  margin: 0;
+  padding: 8px 12px 6px;
+  color: #d2c5e6;
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+  background: #14072b;
+}
+.hint { display: none; }
+.diagnostics {
+  width: 100%;
+  margin: 0;
+  padding: 8px 12px calc(14px + env(safe-area-inset-bottom));
+  color: #b4a3cf;
+  background: #14072b;
+  border-top: 1px solid rgba(188, 148, 246, 0.18);
+  font: 10px/1.8 monospace;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 14px;
+}
+.diagnostics strong { color: #e2d5f5; font-weight: 600; }
+
+@media (min-width: 761px) {
+  main { max-width: 760px; }
+  .camera-view { height: min(64vh, 640px); }
+}
+@media (max-width: 380px) {
+  .controls { padding-left: 14px; padding-right: 14px; gap: 9px; }
+  button { font-size: 14px; }
+}
+
+/* ========================================
+   CONSTELLATION DISCOVERY OVERLAY (3 ช่วง + ฟอนต์ Kanit)
+   ======================================== */
+#discoveryOverlay {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--base-bg) url("constellation-background.jpg") center center / cover no-repeat;
+  height: calc(100dvh - 64px);
+}
+#discoveryOverlay.is-open { display: flex; }
+
+.discovery-content {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: transparent;
+}
+
+.discovery-video-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 38%;
+  overflow: hidden;
+  background: var(--base-bg);
+}
+#discoveryVideo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--base-bg);
+}
+#videoFallback {
+  display: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: #eee5f7;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.7;
+  background: rgba(25, 10, 53, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+#closeDiscovery {
+  display: none;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  width: 36px;
+  min-height: 36px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  background: rgba(25, 10, 53, 0.55);
+  color: #fff;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  backdrop-filter: blur(4px);
+}
+#closeDiscovery.is-visible { display: flex; align-items: center; justify-content: center; }
+
+/* ตัวจัดตำแหน่งด้านล่าง */
+.discovery-info {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  padding: 10px 16px 30px;     /* 30px ตัวหลังสุด = ระยะห่างกล่องจากขอบจอล่าง */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;     /* ดันทั้งหัวข้อและกล่องลงมาด้านล่าง */
+  align-items: center;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+  font-family: 'Kanit', sans-serif;
+}
+
+/* --- ช่วงที่ 1: หัวข้อชื่อราศี (อยู่นอกกรอบ เหนือกล่อง Liquid Glass) --- */
+.discovery-header-outside {
+  text-align: center;
+  margin-bottom: 13px;           /* ระยะห่างระหว่างชื่อราศีไทยกับขอบบนกล่อง */
+  padding: 0 14px;
+  text-shadow: 0 2px 12px rgba(10, 3, 24, 0.85);
+}
+
+#discoveryTitleEn {
+  margin: 0;
+  color: #ffffff;                /* สีขาว */
+  font-size: clamp(28px, 8vw, 36px); /* ตัวใหญ่ */
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.03em;
+}
+
+#discoveryTitleTh {
+  margin: 5px 0 0;
+  color: #cfb3ff;                /* สีม่วงอ่อน */
+  font-size: clamp(16px, 4vw, 19px); /* ตัวเล็กกว่าภาษาอังกฤษ */
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* --- ตัวครอบกล่อง Liquid Glass (ให้ดาวลอยแปะอยู่นอกกล่องและอยู่เลเยอร์บนสุด) --- */
+.discovery-glass-wrap {
+  position: relative;
+  width: 360px;                  /* ความกว้างกล่อง */
+  height: 300px;                 /* ความสูงกล่อง */
+  max-width: 90%;
+  max-height: 90%;
+  flex: 0 0 300px;               /* ใส่เลขเดียวกับ height ด้านบนเสมอ */
+}
+
+/* ดาวสีเหลืองเลเยอร์บนสุด (แปะทะลุขอบกล่องด้านนอก) */
+.discovery-glass-wrap::before,
+.discovery-glass-wrap::after {
+  position: absolute;
+  z-index: 10;                   /* อยู่เลเยอร์บนสุด ทับขอบกล่อง */
+  display: block;
+  height: auto;
+  color: #f4d58a;
+  text-shadow: 0 0 14px rgba(255, 211, 120, 0.75);
+  pointer-events: none;
+  line-height: 1;
+}
+
+/* ดาวดวงใหญ่ มุมซ้ายบน (ลอยเกยขอบกล่องออกมาด้านนอก) */
+.discovery-glass-wrap::before {
+  content: "✦";
+  top: -16px;
+  left: -10px;
+  font-size: 36px;               /* ขนาดใหญ่ขึ้น */
+}
+
+/* กลุ่มดาวมุมขวาล่าง (ลอยเกยขอบกล่องออกมาด้านนอก) */
+.discovery-glass-wrap::after {
+  content: "✧  ·  ✦";
+  right: -8px;
+  bottom: -12px;
+  font-size: 24px;               /* ขนาดใหญ่ขึ้น */
+  letter-spacing: 8px;
+}
+
+/* --- ตัวกล่อง Liquid Glass --- */
+.discovery-info-inner {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 18px 18px 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(220, 195, 255, .48) transparent;
+  border: 1px solid rgba(232, 216, 255, .34);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 18% 8%, rgba(197, 157, 255, .16), transparent 38%),
+    linear-gradient(145deg, rgba(39, 17, 82, .86), rgba(25, 10, 53, .84));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.20),
+    inset 0 -1px 0 rgba(205,175,255,.08),
+    0 18px 48px rgba(10, 3, 24, .45);
+  backdrop-filter: blur(20px) saturate(135%);
+  -webkit-backdrop-filter: blur(20px) saturate(135%);
+}
+.discovery-info-inner::-webkit-scrollbar { width: 5px; }
+.discovery-info-inner::-webkit-scrollbar-track { background: transparent; margin: 18px 0; }
+.discovery-info-inner::-webkit-scrollbar-thumb {
+  background: rgba(220, 195, 255, .42);
+  border-radius: 99px;
+}
+
+/* --- ช่วงที่ 2: วันที่/ธาตุ + รายละเอียดยาว --- */
+#discoveryMeta {
+  width: 100%;
+  margin: 0 0 14px;              /* เว้น 1 บรรทัดก่อนขึ้นรายละเอียดยาว */
+  color: #e4d4ff;                /* สีม่วงที่อ่อนกว่าชื่อราศีไทย */
+  font-size: 20px;               /* ตัวเล็กกว่าราศีกุมภ์หน่อย */
+  font-weight: 500;
+  text-align: center;            /* ตัวอักษรอยู่กลาง */
+  line-height: 1.4;
+}
+
+#discoveryDescription {
+  width: 100%;
+  margin: 0 0 14px;              /* เว้น 1 บรรทัดก่อนขึ้นช่วงที่ 3 */
+  color: #e4d4ff;                /* สีเดียวกับบรรทัดแรก */
+  font-size: 18px;               /* ตัวเล็กกว่าบรรทัดแรก */
+  font-weight: 300;
+  text-align: left;              /* ตัวอักษรชิดซ้าย */
+  line-height: 1.65;
+  white-space: pre-line;
+}
+
+/* --- ช่วงที่ 3: จุดเด่น และ จุดที่ควรระวัง --- */
+#discoveryHighlights {
+  width: 100%;
+  margin: 0;
+  color: #e4d4ff;                /* สีเดียวกับช่วงที่ 2 */
+  font-size: 18px;
+  font-weight: 400;
+  text-align: left;
+  line-height: 1.6;
+}
+#discoveryHighlights p {
+  margin: 0 0 4px;
+}
+#discoveryHighlights p:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 480px) {
+  #discoveryOverlay {
+    top: 64px;
+    height: calc(100dvh - 64px);
+  }
+  .discovery-info { padding: 10px 14px 24px; }
+  .discovery-glass-wrap {
+    width: 360px;
+    height: 300px;
+    max-width: 90%;
+    max-height: 90%;
+    flex: 0 0 300px;
+  }
+  .discovery-info-inner {
+    padding: 18px 16px 30px;
+  }
+  #discoveryMeta { font-size: 13.5px; }
+  #discoveryDescription,
+  #discoveryHighlights { font-size: 12.5px; }
+}
+
+/* ========================================
+   TACTILE BUTTON PRESS FEEDBACK (รองรับมือถือ + คอมชัดเจน)
+   ======================================== */
+button,
+#playerBar {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  transition:
+    transform 0.12s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.12s ease,
+    border-color 0.12s ease,
+    filter 0.12s ease;
+}
+
+button:not(:disabled):hover,
+#playerBar:hover {
+  border-color: rgba(230, 200, 255, 0.72);
+  filter: brightness(1.15);
+}
+
+button:not(:disabled):active,
+button:not(:disabled).is-pressed {
+  transform: translateY(3px) scale(0.91) !important;
+  border-color: rgba(242, 222, 255, 0.95) !important;
+  filter: brightness(1.32) !important;
+  box-shadow:
+    inset 0 3px 8px rgba(8, 2, 20, 0.65),
+    0 0 16px rgba(155, 92, 255, 0.55) !important;
+}
+
+#runAnimation:not(:disabled):hover {
+  transform: translateX(-50%) translateY(-1px);
+}
+#runAnimation:not(:disabled):active,
+#runAnimation:not(:disabled).is-pressed {
+  transform: translateX(-50%) translateY(3px) scale(0.90) !important;
+  border-color: rgba(242, 222, 255, 0.95) !important;
+  filter: brightness(1.32) !important;
+  box-shadow:
+    inset 0 3px 10px rgba(8, 2, 20, 0.7),
+    0 0 22px rgba(176, 118, 255, 0.7) !important;
+}
+
+#playerBar:active,
+#playerBar.is-pressed,
+#closeNameDialog:active,
+#closeNameDialog.is-pressed,
+#closeDiscovery:active,
+#closeDiscovery.is-pressed {
+  transform: scale(0.88) !important;
+  filter: brightness(1.32) !important;
+}
+</style>
+
+<script async
+  src="https://docs.opencv.org/4.x/opencv.js"
+  onload="onOpenCvReady();">
+</script>
+</head>
+
+<body>
+<header>
+  <h1>Light The Star</h1>
+</header>
+
+<!-- First-time player name prompt -->
+<section id="nameDialog" aria-hidden="true">
+  <div class="name-dialog-card" role="dialog" aria-modal="true" aria-labelledby="nameDialogTitle">
+    <button id="closeNameDialog" type="button" aria-label="Close">×</button>
+    <h2 id="nameDialogTitle">PLAYER NAME</h2>
+    <input id="playerNameInput" type="text" maxlength="24" placeholder="Enter your name" autocomplete="nickname">
+    <div class="name-dialog-actions">
+      <button id="savePlayerName" type="button">Continue</button>
+      <button id="skipPlayerName" type="button">Skip</button>
+    </div>
+  </div>
+</section>
+
+<section id="discoveryOverlay" aria-hidden="true" aria-label="ข้อมูลกลุ่มดาว">
+  <div class="discovery-content">
+    <div class="discovery-video-wrap">
+      <video id="discoveryVideo" autoplay muted loop playsinline preload="auto"></video>
+      <button id="closeDiscovery" type="button" aria-label="ปิดหน้าต่าง">×</button>
+      <div id="videoFallback">ยังไม่มีไฟล์ Animation ของกลุ่มดาวนี้<br>นำไฟล์วิดีโอไปใส่ในโฟลเดอร์ animations แล้วตั้งชื่อให้ตรงกับราศีได้เลย</div>
+    </div>
+
+    <article class="discovery-info">
+      <!-- ช่วงที่ 1: หัวข้ออยู่นอกกรอบด้านบน -->
+      <div class="discovery-header-outside">
+        <h2 id="discoveryTitleEn">Aquarius</h2>
+        <p id="discoveryTitleTh">ราศีกุมภ์</p>
+      </div>
+
+      <!-- กรอบ Liquid Glass (ช่วงที่ 2 + ช่วงที่ 3) พร้อมดาวแปะอยู่นอกกรอบ -->
+      <div class="discovery-glass-wrap">
+        <div class="discovery-info-inner">
+          <p id="discoveryMeta">13 ก.พ. - 13 มี.ค. | ธาตุลม</p>
+          <p id="discoveryDescription"></p>
+          <div id="discoveryHighlights">
+            <p id="discoveryStrengths"></p>
+            <p id="discoveryWeaknesses"></p>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<main>
+  <div class="camera-view" id="cameraView">
+    <video id="camera" autoplay playsinline muted></video>
+    <canvas id="canvasOutput"></canvas>
+    <div class="crosshair"></div>
+    <button id="runAnimation" type="button"
+      title="เล่นอนิเมชัน" aria-label="เล่นอนิเมชัน">
+      Trigger Animation
+    </button>
+  </div>
+
+  <div class="controls">
+    <div id="playerBar">
+      <div id="playerInfo">Connecting</div>
+    </div>
+    <button id="startCamera" disabled>กำลังโหลด OpenCV.js...</button>
+    <button id="resetTracking" type="button">Reset<br>Hold Tracking</button>
+  </div>
+
+  <div id="status">สถานะ: รอโหลด OpenCV.js</div>
+
+  <div class="diagnostics" aria-label="ข้อมูลการตรวจจับ">
+    <span><strong>Screen:</strong> <span id="detectedStatus" style="color:#ff4d4d">NO</span></span>
+    <span><strong>Tracking:</strong> <span id="trackingStatus" style="color:#ff4d4d">NO</span></span>
+    <span><strong>X:</strong> <span id="coordX">0.50</span></span>
+    <span><strong>Y:</strong> <span id="coordY">0.50</span></span>
+  </div>
+</main>
+
+<script src="constellations.js"></script>
+<script>
+const camera = document.getElementById("camera");
+const canvasOutput = document.getElementById("canvasOutput");
+const button = document.getElementById("startCamera");
+const resetTrackingButton = document.getElementById("resetTracking");
+const status = document.getElementById("status");
+const coordX = document.getElementById("coordX");
+const coordY = document.getElementById("coordY");
+const detectedStatus = document.getElementById("detectedStatus");
+const trackingStatus = document.getElementById("trackingStatus");
+const playerInfo = document.getElementById("playerInfo");
+const playerBar = document.getElementById("playerBar");
+const nameDialog = document.getElementById("nameDialog");
+const playerNameInput = document.getElementById("playerNameInput");
+const savePlayerNameButton = document.getElementById("savePlayerName");
+const skipPlayerNameButton = document.getElementById("skipPlayerName");
+const closeNameDialogButton = document.getElementById("closeNameDialog");
+const runAnimationButton = document.getElementById("runAnimation");
+const ctx = canvasOutput.getContext("2d");
+
+let stream = null;
+let isOpenCvReady = false;
+let isProcessing = false;
+
+// ========================================
+// SCREEN LOCK + FEATURE TRACKING
+// ========================================
+
+let screenLocked = false;
+let lockedQuad = null;
+let previousGray = null;
+let previousPoints = null;
+
+let anchorX = 0.5;
+let anchorY = 0.5;
+
+let lastGoodXY = { x: 0.5, y: 0.5 };
+let smoothedXY = { x: 0.5, y: 0.5 };
+
+let lostFrames = 0;
+
+const XY_SMOOTHING_ALPHA = 0.22;
+const XY_DEADBAND = 0.0015;
+
+const MAX_FEATURES = 250;
+const MIN_FEATURES = 8;
+const MIN_INLIERS = 8;
+const MAX_TRACK_ERROR = 35;
+
+const MIN_AREA_RATIO = 0.025;
+const MAX_AREA_RATIO = 0.92;
+
+// ========================================
+// CONSTELLATION ZONE SETTINGS
+// ========================================
+
+const CONSTELLATION_ZONES = [
+  { id: "gemini",      name: "Gemini",      x: 0.145, y: 0.130, rx: 0.115, ry: 0.105 },
+  { id: "virgo",       name: "Virgo",       x: 0.425, y: 0.115, rx: 0.065, ry: 0.105 },
+  { id: "pisces",      name: "Pisces",      x: 0.665, y: 0.155, rx: 0.105, ry: 0.095 },
+  { id: "leo",         name: "Leo",         x: 0.920, y: 0.265, rx: 0.065, ry: 0.085 },
+  { id: "aries",       name: "Aries",       x: 0.845, y: 0.535, rx: 0.070, ry: 0.075 },
+  { id: "sagittarius", name: "Sagittarius", x: 0.565, y: 0.425, rx: 0.075, ry: 0.090 },
+  { id: "scorpio",     name: "Scorpio",     x: 0.685, y: 0.700, rx: 0.060, ry: 0.090 },
+  { id: "libra",       name: "Libra",       x: 0.915, y: 0.875, rx: 0.060, ry: 0.080 },
+  { id: "aquarius",    name: "Aquarius",    x: 0.465, y: 0.890, rx: 0.065, ry: 0.075 },
+  { id: "taurus",      name: "Taurus",      x: 0.120, y: 0.865, rx: 0.080, ry: 0.080 },
+  { id: "cancer",      name: "Cancer",      x: 0.390, y: 0.610, rx: 0.065, ry: 0.095 },
+  { id: "capricorn",   name: "Capricorn",   x: 0.080, y: 0.540, rx: 0.065, ry: 0.085 }
+];
+
+let currentZone = null;
+let discoveredZone = null;
+let waitingForExit = false;
+let discoveryReady = false;
+
+function isInsideZone(x, y, zone) {
+  const dx = (x - zone.x) / zone.rx;
+  const dy = (y - zone.y) / zone.ry;
+  return (dx * dx + dy * dy) <= 1;
+}
+
+function findZone(x, y) {
+  return CONSTELLATION_ZONES.find(zone =>
+    isInsideZone(x, y, zone)
+  ) || null;
+}
+
+function hideDiscoveryButton() {
+  runAnimationButton.style.display = "none";
+  discoveryReady = false;
+}
+
+function resetZoneDetection() {
+  currentZone = null;
+  discoveredZone = null;
+  waitingForExit = false;
+  hideDiscoveryButton();
+}
+
+function updateZoneDetection(x, y) {
+  const zone = findZone(x, y);
+
+  if (!zone) {
+    currentZone = null;
+    discoveredZone = null;
+    waitingForExit = false;
+    hideDiscoveryButton();
+    return;
+  }
+
+  if (waitingForExit) return;
+
+  if (!currentZone || currentZone.id !== zone.id) {
+    currentZone = zone;
+    discoveredZone = zone;
+    discoveryReady = true;
+
+    runAnimationButton.textContent = "Discover " + zone.name;
+    runAnimationButton.style.display = "block";
+    runAnimationButton.disabled = false;
+
+    status.textContent = "พบพื้นที่กลุ่มดาว " + zone.name + " แล้ว! กดปุ่มเพื่อเล่น Animation";
+  }
+}
+
+// ========================================
+// OPENCV READY
+// ========================================
+
+function onOpenCvReady() {
+  if (typeof cv === "undefined") return;
+
+  cv.onRuntimeInitialized = () => {
+    if (isOpenCvReady) return;
+
+    isOpenCvReady = true;
+    status.textContent = "OpenCV พร้อมใช้งาน";
+    button.textContent = "Open Camera";
+    button.disabled = false;
+  };
+
+  if (cv.Mat && !isOpenCvReady) {
+    isOpenCvReady = true;
+    status.textContent = "OpenCV พร้อมใช้งาน";
+    button.textContent = "Open Camera";
+    button.disabled = false;
+  }
+}
+
+function setTargetStatus(found) {
+  detectedStatus.textContent = found ? "LOCKED" : "NO";
+  detectedStatus.style.color =
+    found ? "#0bf4ec" : "#ff4d4d";
+}
+
+function setTrackingStatus(found) {
+  trackingStatus.textContent = found ? "ACTIVE" : "HOLD";
+  trackingStatus.style.color =
+    found ? "#0bf4ec" : "#ffcf5a";
+}
+
+function displayCoordinates(x, y) {
+  coordX.textContent = Number(x).toFixed(3);
+  coordY.textContent = Number(y).toFixed(3);
+}
+
+// ========================================
+// WEBSOCKET + PLAYER NAME
+// ========================================
+
+const WS_ENDPOINT =
+  "wss://https://drew-pocket-ball-internationally.trycloudflare.com";
+
+const PLAYER_NAME_SESSION_KEY = "lts_player_name";
+const PLAYER_PROMPTED_SESSION_KEY = "lts_player_prompted";
+
+let socket = null;
+let playerId = null;
+let playerDisplayName = sessionStorage.getItem(PLAYER_NAME_SESSION_KEY) || "Player";
+let lastXYSendTime = 0;
+
+function updatePlayerInfo(connectionText = "Connected") {
+  const fallback = playerId ? `Player ${playerId}` : "Player";
+  const shownName = playerDisplayName || fallback;
+  playerInfo.textContent = `${shownName} · ${connectionText} ✎`;
+}
+
+function openPlayerNameDialog(prefillCurrent = false) {
+  const savedName = sessionStorage.getItem(PLAYER_NAME_SESSION_KEY) || "";
+  playerNameInput.value = prefillCurrent ? savedName : "";
+  nameDialog.classList.add("is-open");
+  nameDialog.setAttribute("aria-hidden", "false");
+  setTimeout(() => playerNameInput.focus(), 0);
+}
+
+function closePlayerNameDialog() {
+  nameDialog.classList.remove("is-open");
+  nameDialog.setAttribute("aria-hidden", "true");
+}
+
+function sendPlayerName(name, saveToSession = false) {
+  if (!playerId) return false;
+  const cleaned = String(name || "").replace(/[\u0000-\u001f\u007f]/g, "").trim().slice(0, 24);
+  playerDisplayName = cleaned || `Player ${playerId}`;
+
+  if (saveToSession && cleaned) {
+    sessionStorage.setItem(PLAYER_NAME_SESSION_KEY, cleaned);
+  }
+  sessionStorage.setItem(PLAYER_PROMPTED_SESSION_KEY, "1");
+
+  wsSend({ type: "name", name: playerDisplayName });
+  updatePlayerInfo();
+  return true;
+}
+
+function savePlayerName() {
+  const cleaned = playerNameInput.value.replace(/[\u0000-\u001f\u007f]/g, "").trim().slice(0, 24);
+  if (!cleaned) {
+    playerNameInput.focus();
+    playerNameInput.setCustomValidity("Please enter a name or choose Skip.");
+    playerNameInput.reportValidity();
+    return;
+  }
+  playerNameInput.setCustomValidity("");
+  sendPlayerName(cleaned, true);
+  closePlayerNameDialog();
+}
+
+function skipPlayerName() {
+  sessionStorage.removeItem(PLAYER_NAME_SESSION_KEY);
+  const defaultName = playerId ? `Player ${playerId}` : "Player";
+  sendPlayerName(defaultName, false);
+  closePlayerNameDialog();
+}
+
+playerBar.addEventListener("click", () => {
+  openPlayerNameDialog(true);
+});
+
+savePlayerNameButton.addEventListener("click", savePlayerName);
+skipPlayerNameButton.addEventListener("click", skipPlayerName);
+closeNameDialogButton.addEventListener("click", skipPlayerName);
+playerNameInput.addEventListener("keydown", event => {
+  if (event.key === "Enter") savePlayerName();
+  if (event.key === "Escape") skipPlayerName();
+});
+
+function connectWebSocket() {
+  if (socket &&
+      [WebSocket.OPEN, WebSocket.CONNECTING].includes(socket.readyState)) {
+    return;
+  }
+
+  socket = new WebSocket(WS_ENDPOINT);
+
+  socket.addEventListener("open", () => {
+    playerInfo.textContent = "Connecting";
+  });
+
+  socket.addEventListener("message", event => {
+    try {
+      const data = JSON.parse(event.data);
+
+      if (data.type === "welcome") {
+        playerId = data.playerId;
+
+        const savedName = sessionStorage.getItem(PLAYER_NAME_SESSION_KEY);
+        const alreadyPrompted = sessionStorage.getItem(PLAYER_PROMPTED_SESSION_KEY) === "1";
+
+        if (savedName) {
+          sendPlayerName(savedName, true);
+        } else if (alreadyPrompted) {
+          sendPlayerName(`Player ${playerId}`, false);
+        } else {
+          playerDisplayName = `Player ${playerId}`;
+          updatePlayerInfo();
+          openPlayerNameDialog(false);
+        }
+
+        if (stream && !isDiscoveryOpen) sendPlayerActive(true);
+
+      } else if (data.type === "error") {
+        playerInfo.textContent = data.message || "Server error";
+      }
+
+    } catch (e) {
+      console.warn("WebSocket parse error", e);
+    }
+  });
+
+  socket.addEventListener("close", () => {
+    playerId = null;
+    updatePlayerInfo("Reconnecting…");
+    setTimeout(connectWebSocket, 1500);
+  });
+
+  socket.addEventListener("error", () => {
+    updatePlayerInfo("Connection failed");
+  });
+}
+
+function wsSend(data) {
+  if (socket?.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify(data));
+    return true;
+  }
+  return false;
+}
+
+function sendPlayerActive(active) {
+  wsSend({
+    type: "active",
+    active: Boolean(active)
+  });
+}
+
+function sendXYToTouchDesigner(x, y) {
+  const now = performance.now();
+  if (now - lastXYSendTime < 50) return;
+  lastXYSendTime = now;
+
+  wsSend({
+    type: "xy",
+    x: Math.max(0, Math.min(1, Number(x))),
+    y: Math.max(0, Math.min(1, Number(y)))
+  });
+}
+
+// ========================================
+// WEBSITE CONSTELLATION ANIMATION (3 ช่วง)
+// ========================================
+
+const discoveryOverlay = document.getElementById("discoveryOverlay");
+const discoveryVideo = document.getElementById("discoveryVideo");
+const videoFallback = document.getElementById("videoFallback");
+const discoveryTitleEn = document.getElementById("discoveryTitleEn");
+const discoveryTitleTh = document.getElementById("discoveryTitleTh");
+const discoveryMeta = document.getElementById("discoveryMeta");
+const discoveryDescription = document.getElementById("discoveryDescription");
+const discoveryStrengths = document.getElementById("discoveryStrengths");
+const discoveryWeaknesses = document.getElementById("discoveryWeaknesses");
+const closeDiscoveryButton = document.getElementById("closeDiscovery");
+
+let isDiscoveryOpen = false;
+
+const preloadedVideos = {};
+function preloadAllConstellationVideos() {
+  if (typeof CONSTELLATION_INFO === "undefined") return;
+  Object.values(CONSTELLATION_INFO).forEach(info => {
+    if (!info.video || preloadedVideos[info.video]) return;
+    const v = document.createElement("video");
+    v.preload = "auto";
+    v.muted = true;
+    v.playsInline = true;
+    v.src = info.video;
+    v.load();
+    preloadedVideos[info.video] = v;
+  });
+}
+window.addEventListener("load", preloadAllConstellationVideos);
+
+function openConstellationInfo(zone) {
+  if (!zone || !CONSTELLATION_INFO[zone.id]) return;
+
+  const info = CONSTELLATION_INFO[zone.id];
+  isDiscoveryOpen = true;
+
+  sendPlayerActive(false);
+  window.scrollTo({ top: 0, behavior: "instant" });
+
+  // ช่วงที่ 1: ชื่ออังกฤษ + ชื่อไทย นอกกรอบ
+  discoveryTitleEn.textContent = info.name || zone.name;
+  discoveryTitleTh.textContent = info.thaiName || "";
+
+  // ช่วงที่ 2: วันที่/ธาตุ + รายละเอียดยาว
+  discoveryMeta.textContent = info.meta || "";
+  discoveryDescription.textContent = info.description || "ยังไม่มีคำอธิบายสำหรับกลุ่มดาวนี้";
+
+  // ช่วงที่ 3: จุดเด่น และ จุดที่ควรระวัง
+  discoveryStrengths.textContent = info.strengths ? `  จุดเด่น: ${info.strengths}` : "";
+  discoveryWeaknesses.textContent = info.weaknesses ? `  จุดที่ควรระวัง: ${info.weaknesses}` : "";
+
+  discoveryOverlay.classList.add("is-open");
+  discoveryOverlay.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+
+  closeDiscoveryButton.classList.remove("is-visible");
+  videoFallback.style.display = "none";
+  videoFallback.textContent =
+    "ยังไม่มีไฟล์ Animation ของกลุ่มดาวนี้\nนำไฟล์วิดีโอไปใส่ในโฟลเดอร์ animations แล้วตั้งชื่อให้ตรงกับราศีได้เลย";
+
+  let firstLoopCompleted = false;
+  let videoStarted = false;
+  let previousVideoTime = 0;
+
+  function revealCloseButton() {
+    if (firstLoopCompleted) return;
+    firstLoopCompleted = true;
+    closeDiscoveryButton.classList.add("is-visible");
+  }
+
+  discoveryVideo.onerror = () => {
+    discoveryVideo.style.display = "none";
+    videoFallback.style.display = "flex";
+    revealCloseButton();
+  };
+
+  discoveryVideo.onloadeddata = () => {
+    discoveryVideo.style.display = "block";
+    videoFallback.style.display = "none";
+  };
+
+  discoveryVideo.onplaying = () => {
+    videoStarted = true;
+  };
+
+  discoveryVideo.ontimeupdate = () => {
+    const duration = discoveryVideo.duration;
+    const currentTime = discoveryVideo.currentTime;
+
+    if (
+      videoStarted &&
+      Number.isFinite(duration) &&
+      duration > 0 &&
+      (
+        currentTime >= duration - Math.max(0.2, duration * 0.01) ||
+        (previousVideoTime > duration * 0.8 && currentTime < previousVideoTime)
+      )
+    ) {
+      revealCloseButton();
+    }
+
+    previousVideoTime = currentTime;
+  };
+
+  if (info.video) {
+    const targetSrc = new URL(info.video, window.location.href).href;
+    if (discoveryVideo.src !== targetSrc) {
+      discoveryVideo.src = info.video;
+    }
+    discoveryVideo.currentTime = 0;
+    discoveryVideo.style.display = "block";
+
+    discoveryVideo.play().catch(() => {
+      videoFallback.style.display = "flex";
+      videoFallback.textContent =
+        "ไม่สามารถเล่นวิดีโออัตโนมัติได้ กรุณาตรวจสอบไฟล์ Animation";
+      revealCloseButton();
+    });
+  } else {
+    discoveryVideo.style.display = "none";
+    videoFallback.style.display = "flex";
+    revealCloseButton();
+  }
+}
+
+function closeConstellationInfo() {
+  isDiscoveryOpen = false;
+  discoveryOverlay.classList.remove("is-open");
+  discoveryOverlay.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+
+  discoveryVideo.pause();
+  discoveryVideo.ontimeupdate = null;
+  discoveryVideo.onplaying = null;
+  discoveryVideo.onerror = null;
+  discoveryVideo.onloadeddata = null;
+  discoveryVideo.removeAttribute("src");
+  discoveryVideo.load();
+  closeDiscoveryButton.classList.remove("is-visible");
+
+  if (stream && isProcessing) {
+    sendPlayerActive(true);
+  }
+}
+
+runAnimationButton.addEventListener("click", () => {
+  if (!discoveryReady || !discoveredZone || isDiscoveryOpen) return;
+
+  const selectedConstellation = discoveredZone;
+  openConstellationInfo(selectedConstellation);
+
+  hideDiscoveryButton();
+  waitingForExit = true;
+});
+
+closeDiscoveryButton.addEventListener("click", closeConstellationInfo);
+
+connectWebSocket();
+
+// ========================================
+// GEOMETRY
+// ========================================
+
+function polygonArea(points) {
+  let area = 0;
+
+  for (let i = 0; i < points.length; i++) {
+    const a = points[i];
+    const b = points[(i + 1) % points.length];
+
+    area += a.x * b.y - b.x * a.y;
+  }
+
+  return Math.abs(area / 2);
+}
+
+function centerOf(points) {
+  return {
+    x: points.reduce((s, p) => s + p.x, 0) / points.length,
+    y: points.reduce((s, p) => s + p.y, 0) / points.length
+  };
+}
+
+function orderQuad(points) {
+  const center = centerOf(points);
+
+  const sorted = points.slice().sort((a, b) =>
+    Math.atan2(a.y - center.y, a.x - center.x) -
+    Math.atan2(b.y - center.y, b.x - center.x)
+  );
+
+  let start = 0;
+  let minSum = Infinity;
+
+  sorted.forEach((p, i) => {
+    const sum = p.x + p.y;
+
+    if (sum < minSum) {
+      minSum = sum;
+      start = i;
+    }
+  });
+
+  let ordered = sorted.slice(start).concat(sorted.slice(0, start));
+
+  const cross =
+    (ordered[1].x - ordered[0].x) *
+    (ordered[2].y - ordered[1].y) -
+    (ordered[1].y - ordered[0].y) *
+    (ordered[2].x - ordered[1].x);
+
+  if (cross < 0) {
+    ordered = [
+      ordered[0], ordered[3],
+      ordered[2], ordered[1]
+    ];
+  }
+
+  if (ordered[1].x < ordered[3].x) {
+    ordered = [
+      ordered[0], ordered[3],
+      ordered[2], ordered[1]
+    ];
+  }
+
+  return ordered;
+}
+
+// ========================================
+// FIRST SCREEN DETECTION
+// ========================================
+
+function extractCandidates(srcMat, width, height) {
+  const candidates = [];
+
+  const gray = new cv.Mat();
+  const blurred = new cv.Mat();
+  const edges = new cv.Mat();
+  const closed = new cv.Mat();
+  const contours = new cv.MatVector();
+  const hierarchy = new cv.Mat();
+  const kernel = cv.getStructuringElement(
+    cv.MORPH_RECT,
+    new cv.Size(9, 9)
+  );
+
+  try {
+    cv.cvtColor(srcMat, gray, cv.COLOR_RGBA2GRAY);
+    cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0);
+    cv.Canny(blurred, edges, 22, 85);
+    cv.morphologyEx(edges, closed, cv.MORPH_CLOSE, kernel);
+
+    cv.findContours(
+      closed,
+      contours,
+      hierarchy,
+      cv.RETR_LIST,
+      cv.CHAIN_APPROX_SIMPLE
+    );
+
+    const imageArea = width * height;
+
+    for (let i = 0; i < contours.size(); i++) {
+      const contour = contours.get(i);
+      const approx = new cv.Mat();
+
+      try {
+        const areaRatio =
+          Math.abs(cv.contourArea(contour)) / imageArea;
+
+        if (areaRatio < MIN_AREA_RATIO ||
+            areaRatio > MAX_AREA_RATIO) continue;
+
+        const perimeter = cv.arcLength(contour, true);
+        let found = false;
+
+        for (const eps of [0.018, 0.025, 0.035, 0.045]) {
+          cv.approxPolyDP(
+            contour,
+            approx,
+            eps * perimeter,
+            true
+          );
+
+          if (approx.rows === 4 &&
+              cv.isContourConvex(approx)) {
+            found = true;
+            break;
+          }
+        }
+
+        if (!found) continue;
+
+        const points = [];
+
+        for (let j = 0; j < 4; j++) {
+          const p = approx.intPtr(j, 0);
+          points.push({ x: p[0], y: p[1] });
+        }
+
+        const ordered = orderQuad(points);
+        const area = polygonArea(ordered);
+        const xs = ordered.map(p => p.x);
+        const ys = ordered.map(p => p.y);
+
+        const w = Math.max(...xs) - Math.min(...xs);
+        const h = Math.max(...ys) - Math.min(...ys);
+
+        if (w < width * 0.18 ||
+            h < height * 0.10) continue;
+
+        const aspect = w / Math.max(h, 1);
+
+        if (aspect < 0.35 || aspect > 2.80) continue;
+
+        candidates.push({
+          points: ordered,
+          area,
+          center: centerOf(ordered)
+        });
+
+      } finally {
+        approx.delete();
+        contour.delete();
+      }
+    }
+
+  } finally {
+    gray.delete();
+    blurred.delete();
+    edges.delete();
+    closed.delete();
+    contours.delete();
+    hierarchy.delete();
+    kernel.delete();
+  }
+
+  candidates.sort((a, b) => b.area - a.area);
+  return candidates;
+}
+
+// ========================================
+// FEATURE MASK
+// ========================================
+
+function createScreenMask(gray, quad) {
+  const mask = cv.Mat.zeros(
+    gray.rows,
+    gray.cols,
+    cv.CV_8UC1
+  );
+
+  const points = cv.matFromArray(
+    4, 1, cv.CV_32SC2,
+    quad.flatMap(p => [
+      Math.round(p.x),
+      Math.round(p.y)
+    ])
+  );
+
+  const polygons = new cv.MatVector();
+  polygons.push_back(points);
+
+  try {
+    cv.fillPoly(
+      mask,
+      polygons,
+      new cv.Scalar(255)
+    );
+  } finally {
+    points.delete();
+    polygons.delete();
+  }
+
+  return mask;
+}
+
+function detectFeatures(gray, quad, maxCount = MAX_FEATURES) {
+  const mask = createScreenMask(gray, quad);
+  const corners = new cv.Mat();
+
+  try {
+    cv.goodFeaturesToTrack(
+      gray,
+      corners,
+      maxCount,
+      0.008,
+      7,
+      mask,
+      5,
+      false,
+      0.04
+    );
+
+    return corners.clone();
+
+  } finally {
+    mask.delete();
+    corners.delete();
+  }
+}
+
+// ========================================
+// INITIALIZE TRACKING
+// ========================================
+
+function initializeTracking(gray, quad) {
+  if (previousGray) previousGray.delete();
+  if (previousPoints) previousPoints.delete();
+
+  previousGray = gray.clone();
+  previousPoints = detectFeatures(gray, quad);
+
+  if (previousPoints.rows < MIN_FEATURES) {
+    console.warn("Feature points น้อยเกินไป:", previousPoints.rows);
+    return false;
+  }
+
+  const center = mapCameraCenter(quad);
+
+  if (!center) return false;
+
+  anchorX = center.x;
+  anchorY = center.y;
+
+  smoothedXY = { x: 0.5, y: 0.5 };
+  lastGoodXY = { x: 0.5, y: 0.5 };
+
+  displayCoordinates(0.5, 0.5);
+  sendXYToTouchDesigner(0.5, 0.5);
+
+  return true;
+}
+
+// ========================================
+// MAP CAMERA CENTER
+// ========================================
+
+function mapCameraCenter(quad) {
+  let src = null;
+  let dst = null;
+  let transform = null;
+  let point = null;
+  let result = null;
+
+  try {
+    src = cv.matFromArray(
+      4, 1, cv.CV_32FC2,
+      quad.flatMap(p => [p.x, p.y])
+    );
+
+    dst = cv.matFromArray(
+      4, 1, cv.CV_32FC2,
+      [0, 0, 1, 0, 1, 1, 0, 1]
+    );
+
+    transform = cv.getPerspectiveTransform(src, dst);
+
+    point = cv.matFromArray(
+      1, 1, cv.CV_32FC2,
+      [camera.videoWidth / 2, camera.videoHeight / 2]
+    );
+
+    result = new cv.Mat();
+
+    cv.perspectiveTransform(point, result, transform);
+
+    const x = result.data32F[0];
+    const y = result.data32F[1];
+
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+
+    return { x, y };
+
+  } catch (e) {
+    console.warn("mapCameraCenter:", e);
+    return null;
+
+  } finally {
+    [src, dst, transform, point, result].forEach(m => {
+      if (m) m.delete();
+    });
+  }
+}
+
+// ========================================
+// OPTICAL FLOW TRACKING
+// ========================================
+
+function pointInsideQuad(point, quad) {
+  let inside = false;
+
+  for (let i = 0, j = quad.length - 1;
+       i < quad.length;
+       j = i++) {
+
+    const xi = quad[i].x;
+    const yi = quad[i].y;
+    const xj = quad[j].x;
+    const yj = quad[j].y;
+
+    const intersect =
+      ((yi > point.y) !== (yj > point.y)) &&
+      (point.x <
+        (xj - xi) * (point.y - yi) /
+        ((yj - yi) || 0.00001) + xi);
+
+    if (intersect) inside = !inside;
+  }
+
+  return inside;
+}
+
+function trackScreen(gray) {
+  if (!previousGray || !previousPoints ||
+      previousPoints.rows < MIN_FEATURES) {
+    return false;
+  }
+
+  let nextPoints = new cv.Mat();
+  let statusMat = new cv.Mat();
+  let errorMat = new cv.Mat();
+  let homography = null;
+  let inlierMask = null;
+  let oldInliers = null;
+  let newInliers = null;
+  let quadMat = null;
+  let movedQuadMat = null;
+  let freshPoints = null;
+
+  try {
+    const winSize = new cv.Size(31, 31);
+
+    cv.calcOpticalFlowPyrLK(
+      previousGray,
+      gray,
+      previousPoints,
+      nextPoints,
+      statusMat,
+      errorMat,
+      winSize,
+      3,
+      new cv.TermCriteria(
+        cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT,
+        30,
+        0.01
+      )
+    );
+
+    const oldData = previousPoints.data32F;
+    const newData = nextPoints.data32F;
+    const statuses = statusMat.data;
+    const errors = errorMat.data32F;
+
+    const srcList = [];
+    const dstList = [];
+
+    for (let i = 0; i < statuses.length; i++) {
+      if (!statuses[i]) continue;
+      if (errors[i] > MAX_TRACK_ERROR) continue;
+
+      const ox = oldData[i * 2];
+      const oy = oldData[i * 2 + 1];
+      const nx = newData[i * 2];
+      const ny = newData[i * 2 + 1];
+
+      if (!Number.isFinite(nx) || !Number.isFinite(ny)) continue;
+
+      srcList.push(ox, oy);
+      dstList.push(nx, ny);
+    }
+
+    const count = srcList.length / 2;
+
+    if (count < MIN_INLIERS) return false;
+
+    oldInliers = cv.matFromArray(
+      count, 1, cv.CV_32FC2, srcList
+    );
+
+    newInliers = cv.matFromArray(
+      count, 1, cv.CV_32FC2, dstList
+    );
+
+    inlierMask = new cv.Mat();
+
+    homography = cv.findHomography(
+      oldInliers,
+      newInliers,
+      cv.RANSAC,
+      3,
+      inlierMask
+    );
+
+    if (homography.empty()) return false;
+
+    let inlierCount = 0;
+    const maskData = inlierMask.data;
+
+    for (let i = 0; i < maskData.length; i++) {
+      if (maskData[i]) inlierCount++;
+    }
+
+    if (inlierCount < MIN_INLIERS) return false;
+
+    quadMat = cv.matFromArray(
+      4, 1, cv.CV_32FC2,
+      lockedQuad.flatMap(p => [p.x, p.y])
+    );
+
+    movedQuadMat = new cv.Mat();
+
+    cv.perspectiveTransform(
+      quadMat,
+      movedQuadMat,
+      homography
+    );
+
+    const q = movedQuadMat.data32F;
+
+    const newQuad = [
+      { x: q[0], y: q[1] },
+      { x: q[2], y: q[3] },
+      { x: q[4], y: q[5] },
+      { x: q[6], y: q[7] }
+    ];
+
+    if (newQuad.some(p =>
+      !Number.isFinite(p.x) ||
+      !Number.isFinite(p.y) ||
+      Math.abs(p.x) > gray.cols * 3 ||
+      Math.abs(p.y) > gray.rows * 3
+    )) {
+      return false;
+    }
+
+    lockedQuad = newQuad;
+
+    const currentCenter = mapCameraCenter(lockedQuad);
+
+    if (!currentCenter) return false;
+
+    const rawX = 0.5 + (currentCenter.x - anchorX);
+    const rawY = 0.5 + (currentCenter.y - anchorY);
+
+    const x = Math.max(0, Math.min(1, rawX));
+    const y = Math.max(0, Math.min(1, rawY));
+
+    let dx = x - smoothedXY.x;
+    let dy = y - smoothedXY.y;
+
+    if (Math.abs(dx) < XY_DEADBAND) dx = 0;
+    if (Math.abs(dy) < XY_DEADBAND) dy = 0;
+
+    smoothedXY = {
+      x: Math.max(0, Math.min(1,
+        smoothedXY.x + dx * XY_SMOOTHING_ALPHA)),
+      y: Math.max(0, Math.min(1,
+        smoothedXY.y + dy * XY_SMOOTHING_ALPHA))
+    };
+
+    lastGoodXY = { ...smoothedXY };
+
+    const tracked = [];
+
+    for (let i = 0; i < statuses.length; i++) {
+      if (!statuses[i] || errors[i] > MAX_TRACK_ERROR) continue;
+
+      const p = {
+        x: newData[i * 2],
+        y: newData[i * 2 + 1]
+      };
+
+      if (pointInsideQuad(p, lockedQuad)) {
+        tracked.push(p.x, p.y);
+      }
+    }
+
+    freshPoints = detectFeatures(gray, lockedQuad, MAX_FEATURES);
+    const fresh = freshPoints.data32F;
+
+    for (let i = 0; i < fresh.length; i += 2) {
+      if (tracked.length / 2 >= MAX_FEATURES) break;
+
+      const x2 = fresh[i];
+      const y2 = fresh[i + 1];
+
+      let tooClose = false;
+
+      for (let j = 0; j < tracked.length; j += 2) {
+        if (Math.hypot(
+          tracked[j] - x2,
+          tracked[j + 1] - y2
+        ) < 9) {
+          tooClose = true;
+          break;
+        }
+      }
+
+      if (!tooClose) tracked.push(x2, y2);
+    }
+
+    if (tracked.length / 2 >= MIN_FEATURES) {
+      const replacement = cv.matFromArray(
+        tracked.length / 2,
+        1,
+        cv.CV_32FC2,
+        tracked
+      );
+
+      previousPoints.delete();
+      previousPoints = replacement;
+    } else {
+      return false;
+    }
+
+    previousGray.delete();
+    previousGray = gray.clone();
+
+    lostFrames = 0;
+
+    displayCoordinates(lastGoodXY.x, lastGoodXY.y);
+    sendXYToTouchDesigner(lastGoodXY.x, lastGoodXY.y);
+
+    updateZoneDetection(lastGoodXY.x, lastGoodXY.y);
+
+    return true;
+
+  } catch (error) {
+    console.warn("Optical Flow tracking:", error);
+    return false;
+
+  } finally {
+    [
+      nextPoints,
+      statusMat,
+      errorMat,
+      homography,
+      inlierMask,
+      oldInliers,
+      newInliers,
+      quadMat,
+      movedQuadMat,
+      freshPoints
+    ].forEach(m => {
+      if (m) m.delete();
+    });
+  }
+}
+
+// ========================================
+// DRAW OVERLAYS
+// ========================================
+
+function drawPolygon(mat, points, color, thickness) {
+  const scalar = color === "cyan"
+    ? new cv.Scalar(183, 138, 210, 255)
+    : new cv.Scalar(255, 180, 0, 255);
+
+  for (let i = 0; i < points.length; i++) {
+    const a = points[i];
+    const b = points[(i + 1) % points.length];
+
+    cv.line(
+      mat,
+      new cv.Point(Math.round(a.x), Math.round(a.y)),
+      new cv.Point(Math.round(b.x), Math.round(b.y)),
+      scalar,
+      thickness
+    );
+  }
+}
+
+function drawFeatures(mat, points) {
+  if (!points) return;
+
+  const data = points.data32F;
+
+  for (let i = 0; i < data.length; i += 2) {
+    cv.circle(
+      mat,
+      new cv.Point(
+        Math.round(data[i]),
+        Math.round(data[i + 1])
+      ),
+      2,
+      new cv.Scalar(210, 138, 183, 255),
+      -1
+    );
+  }
+}
+
+// ========================================
+// VIDEO LOOP
+// ========================================
+
+function processVideo() {
+  if (!isProcessing) return;
+
+  if (isDiscoveryOpen) {
+    requestAnimationFrame(processVideo);
+    return;
+  }
+
+  if (!camera.videoWidth || !camera.videoHeight) {
+    requestAnimationFrame(processVideo);
+    return;
+  }
+
+  const width = camera.videoWidth;
+  const height = camera.videoHeight;
+
+  if (canvasOutput.width !== width ||
+      canvasOutput.height !== height) {
+    canvasOutput.width = width;
+    canvasOutput.height = height;
+  }
+
+  ctx.drawImage(camera, 0, 0, width, height);
+
+  let srcMat = null;
+  let gray = null;
+
+  try {
+    srcMat = cv.imread(canvasOutput);
+    gray = new cv.Mat();
+
+    cv.cvtColor(srcMat, gray, cv.COLOR_RGBA2GRAY);
+
+    if (!screenLocked) {
+      const candidates = extractCandidates(
+        srcMat,
+        width,
+        height
+      );
+
+      if (candidates.length > 0) {
+        const chosen = candidates[0];
+
+        lockedQuad = chosen.points.map(p => ({
+          x: p.x,
+          y: p.y
+        }));
+
+        const initialized =
+          initializeTracking(gray, lockedQuad);
+
+        if (initialized) {
+          screenLocked = true;
+
+          setTargetStatus(true);
+          setTrackingStatus(true);
+
+          status.textContent =
+            "ล็อกจอสำเร็จ! ขยับกล้องเพื่อควบคุมวงกลมได้";
+        } else {
+          lockedQuad = null;
+          status.textContent =
+            "พบขอบจอแล้ว แต่จุดดาวยังไม่เพียงพอ กรุณารอ";
+        }
+      } else {
+        status.textContent =
+          "กำลังค้นหาขอบจอ... กรุณาจัดกล้องให้เห็นจอครบทั้ง 4 มุม";
+      }
+
+      if (!screenLocked) {
+        candidates.forEach(c => {
+          drawPolygon(srcMat, c.points, "orange", 2);
+        });
+      }
+
+    } else {
+      const tracked = trackScreen(gray);
+
+      if (tracked) {
+        setTargetStatus(true);
+        setTrackingStatus(true);
+
+        if (!discoveryReady && !waitingForExit) {
+          status.textContent =
+            "ล็อกจอแล้ว / กำลังติดตามภาพดาว";
+        }
+
+      } else {
+        lostFrames++;
+
+        setTargetStatus(true);
+        setTrackingStatus(false);
+
+        resetZoneDetection();
+
+        displayCoordinates(
+          lastGoodXY.x,
+          lastGoodXY.y
+        );
+
+        status.textContent =
+          "ล็อกจออยู่ / ภาพติดตามขาดชั่วคราว กำลังคงพิกัดล่าสุด";
+      }
+
+      if (lockedQuad) {
+        drawPolygon(srcMat, lockedQuad, "cyan", 3);
+      }
+
+      drawFeatures(srcMat, previousPoints);
+    }
+
+    cv.imshow(canvasOutput, srcMat);
+
+  } catch (error) {
+    console.error("OpenCV error:", error);
+    status.textContent =
+      "เกิดข้อผิดพลาด ดูรายละเอียดใน Console";
+
+  } finally {
+    if (srcMat) srcMat.delete();
+    if (gray) gray.delete();
+  }
+
+  requestAnimationFrame(processVideo);
+}
+
+// ========================================
+// RESET TRACKER
+// ========================================
+
+function resetTracker() {
+  if (previousGray) {
+    previousGray.delete();
+    previousGray = null;
+  }
+
+  if (previousPoints) {
+    previousPoints.delete();
+    previousPoints = null;
+  }
+
+  screenLocked = false;
+  lockedQuad = null;
+  lostFrames = 0;
+
+  anchorX = 0.5;
+  anchorY = 0.5;
+
+  lastGoodXY = { x: 0.5, y: 0.5 };
+  smoothedXY = { x: 0.5, y: 0.5 };
+
+  resetZoneDetection();
+
+  setTargetStatus(false);
+  setTrackingStatus(false);
+  displayCoordinates(0.5, 0.5);
+}
+
+resetTrackingButton.addEventListener("click", () => {
+  if (!stream || !isProcessing) {
+    status.textContent = "กรุณาเปิดกล้องก่อนรีเซ็ตการตรวจจับ";
+    return;
+  }
+
+  resetTracker();
+  status.textContent = "รีเซ็ตแล้ว กำลังค้นหาขอบจอใหม่...";
+});
+
+// ========================================
+// CAMERA ON / OFF
+// ========================================
+
+button.addEventListener("click", async () => {
+  if (!isOpenCvReady) return;
+
+  if (stream) {
+    isProcessing = false;
+    sendPlayerActive(false);
+
+    stream.getTracks().forEach(track => track.stop());
+
+    stream = null;
+    camera.srcObject = null;
+
+    resetTracker();
+
+    ctx.clearRect(
+      0, 0,
+      canvasOutput.width,
+      canvasOutput.height
+    );
+
+    button.textContent = "Open Camera";
+    status.textContent = "Open Camera";
+
+    return;
+  }
+
+  try {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      throw new Error(
+        "กรุณาเปิดเว็บผ่าน HTTPS หรือ localhost"
+      );
+    }
+
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: "environment" },
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      },
+      audio: false
+    });
+
+    camera.srcObject = stream;
+
+    await camera.play();
+
+    resetTracker();
+
+    isProcessing = true;
+    sendPlayerActive(true);
+
+    button.textContent = "Close Camera";
+
+    status.textContent =
+      "กล้องพร้อมแล้ว กำลังค้นหาขอบจอครั้งแรก";
+
+    requestAnimationFrame(processVideo);
+
+  } catch (error) {
+    status.textContent =
+      "เปิดกล้องไม่สำเร็จ: " + error.message;
+
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+    }
+
+    stream = null;
+    isProcessing = false;
+    sendPlayerActive(false);
+  }
+});
+
+// ========================================
+// CLEANUP
+// ========================================
+
+window.addEventListener("pagehide", () => {
+  sendPlayerActive(false);
+
+  isProcessing = false;
+
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+  }
+
+  if (socket) socket.close();
+
+  resetTracker();
+});
+
+window.addEventListener("load", () => {
+  if (typeof cv !== "undefined" && cv.Mat) {
+    onOpenCvReady();
+  }
+});
+
+// ========================================
+// MOBILE TOUCH PRESS EFFECT
+// ========================================
+document.addEventListener("pointerdown", (e) => {
+  const target = e.target.closest("button, #playerBar");
+  if (target && !target.disabled) {
+    target.classList.add("is-pressed");
+  }
+}, { passive: true });
+
+["pointerup", "pointercancel", "pointerleave"].forEach((evt) => {
+  document.addEventListener(evt, (e) => {
+    const target = e.target.closest("button, #playerBar");
+    if (target) {
+      target.classList.remove("is-pressed");
+    }
+  }, { passive: true });
+});
+</script>
+</body>
+</html>
+```[cite: 3]
