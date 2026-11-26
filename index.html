@@ -665,11 +665,6 @@ button:not(:disabled).is-pressed {
   filter: brightness(1.32) !important;
 }
 </style>
-
-<script async
-  src="https://docs.opencv.org/4.x/opencv.js"
-  onload="onOpenCvReady();">
-</script>
 </head>
 
 <body>
@@ -877,28 +872,64 @@ function updateZoneDetection(x, y) {
 }
 
 // ========================================
-// OPENCV READY
+// OPENCV READY (พร้อมตัวตรวจสอบอัตโนมัติและ CDN สำรอง)
 // ========================================
+
+function activateCameraButton() {
+  if (isOpenCvReady) return;
+  isOpenCvReady = true;
+  status.textContent = "OpenCV พร้อมใช้งาน";
+  button.textContent = "Open Camera";
+  button.disabled = false;
+}
 
 function onOpenCvReady() {
   if (typeof cv === "undefined") return;
 
-  cv.onRuntimeInitialized = () => {
-    if (isOpenCvReady) return;
+  if (cv.Mat && typeof cv.imread === "function") {
+    activateCameraButton();
+    return;
+  }
 
-    isOpenCvReady = true;
-    status.textContent = "OpenCV พร้อมใช้งาน";
-    button.textContent = "Open Camera";
-    button.disabled = false;
+  cv.onRuntimeInitialized = activateCameraButton;
+}
+
+const cvCheckInterval = setInterval(() => {
+  if (typeof cv !== "undefined" && cv.Mat && typeof cv.imread === "function") {
+    activateCameraButton();
+    clearInterval(cvCheckInterval);
+  }
+}, 300);
+
+function loadOpenCvScript(src, fallbackSrc) {
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = src;
+
+  let switched = false;
+  const switchToFallback = () => {
+    if (switched || isOpenCvReady || !fallbackSrc) return;
+    switched = true;
+    status.textContent = "กำลังเปลี่ยนเซิร์ฟเวอร์สำรองสำหรับ OpenCV...";
+    loadOpenCvScript(fallbackSrc, null);
   };
 
-  if (cv.Mat && !isOpenCvReady) {
-    isOpenCvReady = true;
-    status.textContent = "OpenCV พร้อมใช้งาน";
-    button.textContent = "Open Camera";
-    button.disabled = false;
-  }
+  script.onload = () => onOpenCvReady();
+  script.onerror = switchToFallback;
+
+  setTimeout(() => {
+    if (!isOpenCvReady && typeof cv === "undefined") {
+      switchToFallback();
+    }
+  }, 6000);
+
+  document.head.appendChild(script);
 }
+
+loadOpenCvScript(
+  "https://docs.opencv.org/4.x/opencv.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/opencv.js/4.9.0/opencv.js"
+);
 
 function setTargetStatus(found) {
   detectedStatus.textContent = found ? "LOCKED" : "NO";
@@ -2167,4 +2198,3 @@ document.addEventListener("pointerdown", (e) => {
 </script>
 </body>
 </html>
-```[cite: 3]
