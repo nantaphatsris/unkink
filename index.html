@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Light The Star</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -348,7 +348,7 @@ button:disabled {
 }
 
 /* ========================================
-   CONSTELLATION DISCOVERY OVERLAY (3 ช่วง + ฟอนต์ Kanit)
+   CONSTELLATION DISCOVERY OVERLAY (Dynamic Sizing Cross-Browser)
    ======================================== */
 #discoveryOverlay {
   position: fixed;
@@ -361,17 +361,20 @@ button:disabled {
   flex-direction: column;
   overflow: hidden;
   background: var(--base-bg) url("constellation-background.jpg") center center / cover no-repeat;
+  height: calc(100vh - 64px);
   height: calc(100dvh - 64px);
 }
 #discoveryOverlay.is-open { display: flex; }
 
 .discovery-content {
   width: 100%;
+  max-width: 760px;
   height: 100%;
   min-height: 0;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   overflow: hidden;
   background: transparent;
 }
@@ -381,7 +384,7 @@ button:disabled {
   flex: 0 0 auto;
   width: 100%;
   aspect-ratio: 16 / 9;
-  max-height: 38%;
+  max-height: clamp(160px, 32dvh, 300px);
   overflow: hidden;
   background: var(--base-bg);
 }
@@ -403,7 +406,7 @@ button:disabled {
   padding: 20px;
   color: #eee5f7;
   text-align: center;
-  font-size: 14px;
+  font-size: clamp(12px, 3.5vw, 14px);
   line-height: 1.7;
   background: rgba(25, 10, 53, 0.88);
   backdrop-filter: blur(12px);
@@ -413,8 +416,8 @@ button:disabled {
 #closeDiscovery {
   display: none;
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 10px;
+  right: 10px;
   z-index: 5;
   width: 36px;
   min-height: 36px;
@@ -428,18 +431,20 @@ button:disabled {
   line-height: 1;
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 #closeDiscovery.is-visible { display: flex; align-items: center; justify-content: center; }
 
-/* ตัวจัดตำแหน่งด้านล่าง */
+/* ตัวจัดตำแหน่งด้านล่าง (ยืดหยุ่นตามพื้นที่จอที่เหลือจริงในทุกเบราว์เซอร์) */
 .discovery-info {
   flex: 1 1 auto;
   min-height: 0;
+  width: 100%;
   margin: 0;
-  padding: 10px 16px 30px;     /* 30px ตัวหลังสุด = ระยะห่างกล่องจากขอบจอล่าง */
+  padding: clamp(8px, 1.8dvh, 16px) clamp(14px, 4vw, 24px) calc(clamp(14px, 2.8dvh, 28px) + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;     /* ดันทั้งหัวข้อและกล่องลงมาด้านล่าง */
+  justify-content: flex-end;
   align-items: center;
   overflow: hidden;
   border: 0;
@@ -451,44 +456,46 @@ button:disabled {
 
 /* --- ช่วงที่ 1: หัวข้อชื่อราศี (อยู่นอกกรอบ เหนือกล่อง Liquid Glass) --- */
 .discovery-header-outside {
+  flex: 0 0 auto;
   text-align: center;
-  margin-bottom: 13px;           /* ระยะห่างระหว่างชื่อราศีไทยกับขอบบนกล่อง */
-  padding: 0 14px;
+  margin-bottom: clamp(8px, 1.6dvh, 14px);
+  padding: 0 12px;
   text-shadow: 0 2px 12px rgba(10, 3, 24, 0.85);
 }
 
 #discoveryTitleEn {
   margin: 0;
-  color: #ffffff;                /* สีขาว */
-  font-size: clamp(28px, 8vw, 36px); /* ตัวใหญ่ */
+  color: #ffffff;
+  font-size: clamp(22px, 6.5vw, 34px);
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: 0.03em;
 }
 
 #discoveryTitleTh {
-  margin: 5px 0 0;
-  color: #cfb3ff;                /* สีม่วงอ่อน */
-  font-size: clamp(16px, 4vw, 19px); /* ตัวเล็กกว่าภาษาอังกฤษ */
+  margin: 4px 0 0;
+  color: #cfb3ff;
+  font-size: clamp(14px, 3.8vw, 18px);
   font-weight: 500;
-  line-height: 1.3;
+  line-height: 1.25;
 }
 
-/* --- ตัวครอบกล่อง Liquid Glass (ให้ดาวลอยแปะอยู่นอกกล่องและอยู่เลเยอร์บนสุด) --- */
+/* --- ตัวครอบกล่อง Liquid Glass (ปรับขนาดอัตโนมัติตามพื้นที่ที่เหลือ) --- */
 .discovery-glass-wrap {
   position: relative;
-  width: 360px;                  /* ความกว้างกล่อง */
-  height: 300px;                 /* ความสูงกล่อง */
-  max-width: 90%;
-  max-height: 90%;
-  flex: 0 0 300px;               /* ใส่เลขเดียวกับ height ด้านบนเสมอ */
+  flex: 1 1 auto;
+  min-height: 0;
+  width: min(100%, 400px);
+  max-height: clamp(200px, 42dvh, 340px);
+  display: flex;
+  flex-direction: column;
 }
 
 /* ดาวสีเหลืองเลเยอร์บนสุด (แปะทะลุขอบกล่องด้านนอก) */
 .discovery-glass-wrap::before,
 .discovery-glass-wrap::after {
   position: absolute;
-  z-index: 10;                   /* อยู่เลเยอร์บนสุด ทับขอบกล่อง */
+  z-index: 10;
   display: block;
   height: auto;
   color: #f4d58a;
@@ -497,31 +504,32 @@ button:disabled {
   line-height: 1;
 }
 
-/* ดาวดวงใหญ่ มุมซ้ายบน (ลอยเกยขอบกล่องออกมาด้านนอก) */
+/* ดาวดวงใหญ่ มุมซ้ายบน */
 .discovery-glass-wrap::before {
   content: "✦";
-  top: -16px;
-  left: -10px;
-  font-size: 36px;               /* ขนาดใหญ่ขึ้น */
+  top: -14px;
+  left: -8px;
+  font-size: clamp(26px, 7vw, 34px);
 }
 
-/* กลุ่มดาวมุมขวาล่าง (ลอยเกยขอบกล่องออกมาด้านนอก) */
+/* กลุ่มดาวมุมขวาล่าง */
 .discovery-glass-wrap::after {
   content: "✧  ·  ✦";
-  right: -8px;
-  bottom: -12px;
-  font-size: 24px;               /* ขนาดใหญ่ขึ้น */
-  letter-spacing: 8px;
+  right: -6px;
+  bottom: -10px;
+  font-size: clamp(18px, 5vw, 22px);
+  letter-spacing: 6px;
 }
 
 /* --- ตัวกล่อง Liquid Glass --- */
 .discovery-info-inner {
   position: relative;
   isolation: isolate;
+  flex: 1 1 auto;
   width: 100%;
   height: 100%;
   min-height: 0;
-  padding: 18px 18px 30px;
+  padding: clamp(14px, 2.5dvh, 20px) clamp(14px, 4vw, 20px) clamp(18px, 3dvh, 26px);
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -532,7 +540,7 @@ button:disabled {
   scrollbar-width: thin;
   scrollbar-color: rgba(220, 195, 255, .48) transparent;
   border: 1px solid rgba(232, 216, 255, .34);
-  border-radius: 26px;
+  border-radius: clamp(20px, 5vw, 26px);
   background:
     radial-gradient(circle at 18% 8%, rgba(197, 157, 255, .16), transparent 38%),
     linear-gradient(145deg, rgba(39, 17, 82, .86), rgba(25, 10, 53, .84));
@@ -544,7 +552,7 @@ button:disabled {
   -webkit-backdrop-filter: blur(20px) saturate(135%);
 }
 .discovery-info-inner::-webkit-scrollbar { width: 5px; }
-.discovery-info-inner::-webkit-scrollbar-track { background: transparent; margin: 18px 0; }
+.discovery-info-inner::-webkit-scrollbar-track { background: transparent; margin: 16px 0; }
 .discovery-info-inner::-webkit-scrollbar-thumb {
   background: rgba(220, 195, 255, .42);
   border-radius: 99px;
@@ -553,22 +561,22 @@ button:disabled {
 /* --- ช่วงที่ 2: วันที่/ธาตุ + รายละเอียดยาว --- */
 #discoveryMeta {
   width: 100%;
-  margin: 0 0 14px;              /* เว้น 1 บรรทัดก่อนขึ้นรายละเอียดยาว */
-  color: #e4d4ff;                /* สีม่วงที่อ่อนกว่าชื่อราศีไทย */
-  font-size: 20px;               /* ตัวเล็กกว่าราศีกุมภ์หน่อย */
+  margin: 0 0 clamp(10px, 1.8dvh, 14px);
+  color: #e4d4ff;
+  font-size: clamp(13px, 3.6vw, 16px);
   font-weight: 500;
-  text-align: center;            /* ตัวอักษรอยู่กลาง */
+  text-align: center;
   line-height: 1.4;
 }
 
 #discoveryDescription {
   width: 100%;
-  margin: 0 0 14px;              /* เว้น 1 บรรทัดก่อนขึ้นช่วงที่ 3 */
-  color: #e4d4ff;                /* สีเดียวกับบรรทัดแรก */
-  font-size: 18px;               /* ตัวเล็กกว่าบรรทัดแรก */
+  margin: 0 0 clamp(10px, 1.8dvh, 14px);
+  color: #e4d4ff;
+  font-size: clamp(12.5px, 3.4vw, 15px);
   font-weight: 300;
-  text-align: left;              /* ตัวอักษรชิดซ้าย */
-  line-height: 1.65;
+  text-align: left;
+  line-height: 1.6;
   white-space: pre-line;
 }
 
@@ -576,38 +584,17 @@ button:disabled {
 #discoveryHighlights {
   width: 100%;
   margin: 0;
-  color: #e4d4ff;                /* สีเดียวกับช่วงที่ 2 */
-  font-size: 18px;
+  color: #e4d4ff;
+  font-size: clamp(12.5px, 3.4vw, 15px);
   font-weight: 400;
   text-align: left;
-  line-height: 1.6;
+  line-height: 1.55;
 }
 #discoveryHighlights p {
   margin: 0 0 4px;
 }
 #discoveryHighlights p:last-child {
   margin-bottom: 0;
-}
-
-@media (max-width: 480px) {
-  #discoveryOverlay {
-    top: 64px;
-    height: calc(100dvh - 64px);
-  }
-  .discovery-info { padding: 10px 14px 24px; }
-  .discovery-glass-wrap {
-    width: 360px;
-    height: 300px;
-    max-width: 90%;
-    max-height: 90%;
-    flex: 0 0 300px;
-  }
-  .discovery-info-inner {
-    padding: 18px 16px 30px;
-  }
-  #discoveryMeta { font-size: 13.5px; }
-  #discoveryDescription,
-  #discoveryHighlights { font-size: 12.5px; }
 }
 
 /* ========================================
@@ -665,6 +652,12 @@ button:not(:disabled).is-pressed {
   filter: brightness(1.32) !important;
 }
 </style>
+
+<script async
+  src="./opencv.js"
+  onload="onOpenCvReady();"
+  onerror="loadOpenCvFallback();">
+</script>
 </head>
 
 <body>
@@ -872,7 +865,7 @@ function updateZoneDetection(x, y) {
 }
 
 // ========================================
-// OPENCV READY (พร้อมตัวตรวจสอบอัตโนมัติและ CDN สำรอง)
+// OPENCV READY
 // ========================================
 
 function activateCameraButton() {
@@ -894,6 +887,18 @@ function onOpenCvReady() {
   cv.onRuntimeInitialized = activateCameraButton;
 }
 
+let fallbackLoaded = false;
+function loadOpenCvFallback() {
+  if (fallbackLoaded || isOpenCvReady) return;
+  fallbackLoaded = true;
+  status.textContent = "ไม่พบ opencv.js ในเครื่อง กำลังโหลดจากเซิร์ฟเวอร์สำรอง...";
+  const s = document.createElement("script");
+  s.async = true;
+  s.src = "https://cdn.jsdelivr.net/npm/@techstark/opencv-js@4.9.0-release.3/dist/opencv.js";
+  s.onload = onOpenCvReady;
+  document.head.appendChild(s);
+}
+
 const cvCheckInterval = setInterval(() => {
   if (typeof cv !== "undefined" && cv.Mat && typeof cv.imread === "function") {
     activateCameraButton();
@@ -901,36 +906,6 @@ const cvCheckInterval = setInterval(() => {
   }
 }, 300);
 
-function loadOpenCvScript(src, fallbackSrc) {
-  const script = document.createElement("script");
-  script.async = true;
-  script.src = src;
-
-  let switched = false;
-  const switchToFallback = () => {
-    if (switched || isOpenCvReady || !fallbackSrc) return;
-    switched = true;
-    status.textContent = "กำลังเปลี่ยนเซิร์ฟเวอร์สำรองสำหรับ OpenCV...";
-    loadOpenCvScript(fallbackSrc, null);
-  };
-
-  script.onload = () => onOpenCvReady();
-  script.onerror = switchToFallback;
-
-  setTimeout(() => {
-    if (!isOpenCvReady && typeof cv === "undefined") {
-      switchToFallback();
-    }
-  }, 6000);
-
-  document.head.appendChild(script);
-}
-
-loadOpenCvScript(
-  "./opencv.js",
-  "https://cdnjs.cloudflare.com/ajax/libs/opencv.js/4.9.0/opencv.js"
-);
-  
 function setTargetStatus(found) {
   detectedStatus.textContent = found ? "LOCKED" : "NO";
   detectedStatus.style.color =
@@ -953,7 +928,7 @@ function displayCoordinates(x, y) {
 // ========================================
 
 const WS_ENDPOINT =
-  "wss://single-revised-corners-bullet.trycloudflare.com";
+  "wss://planets-warrior-slots-hardly.trycloudflare.com";
 
 const PLAYER_NAME_SESSION_KEY = "lts_player_name";
 const PLAYER_PROMPTED_SESSION_KEY = "lts_player_prompted";
@@ -1161,12 +1136,15 @@ function openConstellationInfo(zone) {
   discoveryDescription.textContent = info.description || "ยังไม่มีคำอธิบายสำหรับกลุ่มดาวนี้";
 
   // ช่วงที่ 3: จุดเด่น และ จุดที่ควรระวัง
-  discoveryStrengths.textContent = info.strengths ? `  จุดเด่น: ${info.strengths}` : "";
-  discoveryWeaknesses.textContent = info.weaknesses ? `  จุดที่ควรระวัง: ${info.weaknesses}` : "";
+  discoveryStrengths.textContent = info.strengths ? `- จุดเด่น: ${info.strengths}` : "";
+  discoveryWeaknesses.textContent = info.weaknesses ? `- จุดที่ควรระวัง: ${info.weaknesses}` : "";
 
   discoveryOverlay.classList.add("is-open");
   discoveryOverlay.setAttribute("aria-hidden", "false");
+  document.documentElement.style.overflow = "hidden";
   document.body.style.overflow = "hidden";
+  const innerScroll = discoveryOverlay.querySelector(".discovery-info-inner");
+  if (innerScroll) innerScroll.scrollTop = 0;
 
   closeDiscoveryButton.classList.remove("is-visible");
   videoFallback.style.display = "none";
@@ -1242,6 +1220,7 @@ function closeConstellationInfo() {
   isDiscoveryOpen = false;
   discoveryOverlay.classList.remove("is-open");
   discoveryOverlay.setAttribute("aria-hidden", "true");
+  document.documentElement.style.overflow = "";
   document.body.style.overflow = "";
 
   discoveryVideo.pause();
