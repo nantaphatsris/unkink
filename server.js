@@ -2,21 +2,7 @@ const osc = require("osc");
 const WebSocket = require("ws");
 
 const PORT = 8080;
-const MAX_PLAYERS = 10;
-
-// สีเส้นขอบประจำ Player ID (RGB 0-1) คงที่และไม่ซ้ำกัน
-const PLAYER_OUTLINE_COLORS = {
-    1:  { r: 1.00, g: 0.20, b: 0.20 }, // red
-    2:  { r: 0.10, g: 0.75, b: 1.00 }, // cyan
-    3:  { r: 0.20, g: 1.00, b: 0.35 }, // green
-    4:  { r: 1.00, g: 0.75, b: 0.10 }, // amber
-    5:  { r: 0.75, g: 0.25, b: 1.00 }, // purple
-    6:  { r: 1.00, g: 0.30, b: 0.70 }, // pink
-    7:  { r: 0.20, g: 1.00, b: 0.90 }, // turquoise
-    8:  { r: 1.00, g: 0.50, b: 0.12 }, // orange
-    9:  { r: 0.65, g: 1.00, b: 0.15 }, // lime
-    10: { r: 0.45, g: 0.55, b: 1.00 }  // periwinkle
-};
+const MAX_PLAYERS = 5;
 
 // ========================================
 // OSC -> TouchDesigner
